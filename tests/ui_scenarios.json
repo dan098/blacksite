@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "purpose": "Browser acceptance checklist; scenarios are test instructions, not production evidence or a test runner.",
+  "viewports": [{"width": 375, "height": 812}, {"width": 768, "height": 1024}, {"width": 1440, "height": 1000}],
+  "global_assertions": [
+    "No document-level horizontal overflow; wide evidence tables and tab strips may scroll within their own containers.",
+    "All meaningful controls have visible labels and focus outlines. The interface remains usable with keyboard only.",
+    "No remote fonts, CDN scripts, external evidence links or upload requests are made.",
+    "No result with missing evidence or unavailable tools is labelled clean or safe.",
+    "Evidence and sample names are inserted as text, never HTML. Download URLs are generated same-origin /api/jobs/{id}/artifacts/{artifact_id} endpoints."
+  ],
+  "scenarios": [
+    {
+      "id": "private-token-session",
+      "setup": "Private browser session, API reports authenticated:false.",
+      "steps": [{"action": "goto", "path": "/"}, {"action": "fill", "selector": "#login-token", "value": "Use actual private local token, never log it."}, {"action": "submit", "selector": "#login-form"}],
+      "assertions": ["The login form is visible before authentication.", "POST /api/session carries JSON token in request body and no token in URL.", "No localStorage or sessionStorage token is written.", "After authentication the token input is cleared, #dashboard-view is visible and #private-nav is visible.", "An invalid token produces #login-error with role alert and does not show private evidence."]
+    },
+    {
+      "id": "upload-static-only",
+      "setup": "Authenticated local session; benign temporary test file, never execute a real hostile sample for UI verification.",
+      "steps": [{"action": "goto", "path": "/#new"}, {"action": "set_input_files", "selector": "#sample-file"}, {"action": "check", "selector": "#static-only"}, {"action": "submit", "selector": "#analysis-form"}],
+      "assertions": ["#file-selection shows the filename and byte size as text.", "#profiles-fieldset and #analysis-duration are disabled in static-only mode.", "POST /api/jobs is multipart with file, profiles JSON array, duration and static_only:true.", "The returned real ID opens #job/{id}; no profile is pretended to have run.", "Oversize input and missing profile selection in dynamic mode produce #upload-error without creating a job."]
+    },
+    {
+      "id": "upload-drop-and-profile-selection",
+      "setup": "Authenticated session; benign test file.",
+      "steps": [{"action": "drop_one_file", "selector": "#drop-zone"}, {"action": "uncheck", "selector": "#static-only"}, {"action": "check", "selector": "input[name=profile][value=trace]"}, {"action": "fill", "selector": "#analysis-duration", "value": "60"}],
+      "assertions": ["Drag/drop is optional: labelled native file input works with keyboard.", "Dropping multiple files reports a one-file-only error.", "Four named profiles describe the same Windows OS and user-mode tracing limitations.", "Submitting with no selected profile and no static-only mode is rejected.", "Durations below 15, above 600 or non-integral values are rejected."]
+    },
+    {
+      "id": "deep-link-and-running-refresh",
+      "setup": "Use a real queued, static or running job ID.",
+      "steps": [{"action": "goto", "path": "/#job/{id}"}, {"action": "click", "selector": "#tab-static"}, {"action": "expand", "selector": "#static-content details"}, {"action": "wait", "milliseconds": 5500}],
+      "assertions": ["Deep link loads its job after session verification.", "Active job refreshes about every five seconds; completed job stops periodic refresh.", "Selected tab and profile are preserved during refresh.", "Expanded evidence remains expanded during an update.", "Status is announced only when the state changes, not on every poll.", "A missing job shows #error-view and a retry control rather than an empty successful report."]
+    },
+    {
+      "id": "keyboard-tabs",
+      "setup": "Authenticated job report with available sections.",
+      "steps": [{"action": "focus", "selector": "#tab-summary"}, {"action": "press", "key": "ArrowRight"}, {"action": "press", "key": "End"}, {"action": "press", "key": "Home"}],
+      "assertions": ["Exactly one visible tab has aria-selected:true and tabindex:0.", "Arrow keys move focus and selected panel; Home/End move to first/last visible tab.", "Panels have role tabpanel and aria-labelledby referencing their tabs.", "At mobile widths the tab strip scrolls without document overflow and tabs remain keyboard reachable."]
+    },
+    {
+      "id": "sample-scope-search-and-pagination",
+      "setup": "A job with actual normalized telemetry, or an explicitly isolated browser-test API response. Never expose a test fixture as a real report.",
+      "steps": [{"action": "click", "selector": "#tab-timeline"}, {"action": "fill", "selector": "#event-search", "value": "registry"}, {"action": "submit", "selector": "#event-filter-form"}, {"action": "check", "selector": "#include-noise"}, {"action": "select", "selector": "#run-select", "value": "standard"}],
+      "assertions": ["Related-only is default and GET events contains related=true, run profile ID and limit=200.", "Search, category, offset and scope parameters are encoded.", "Changing run or scope resets pagination.", "#events-prev/#events-next accurately reflect total and offset.", "Driver and security events stay visible in their dedicated panels regardless of related-only toggle.", "Delayed events from an old job, run or filter cannot overwrite the current timeline."]
+    },
+    {
+      "id": "hostile-evidence-is-text",
+      "setup": "Isolated test response only, with malicious-looking sample/evidence strings such as <img src=x onerror=alert(1)>, </pre><script>alert(1)</script>, and javascript: URLs; no dangerous binary.",
+      "steps": [{"action": "goto", "path": "/#job/{test-id}"}, {"action": "visit_each_visible_tab"}, {"action": "expand_all_details"}],
+      "assertions": ["The hostile strings remain visible literal text and create no image/script elements or alerts.", "URLs in IOC/tool/evidence values are not active links.", "An artifact response url of javascript: or an external origin is ignored; download href derives exclusively from job ID and artifact ID.", "Filename evidence cannot change DOM IDs, CSS classes, accessible status roles or routing."]
+    },
+    {
+      "id": "unavailable-and-partial-truthfulness",
+      "setup": "Real unprovisioned installation, static-only report, or isolated test-only unavailable/partial API responses.",
+      "steps": [{"action": "goto", "path": "/#capabilities"}, {"action": "goto", "path": "/#job/{id}"}, {"action": "click", "selector": "#tab-api"}, {"action": "click", "selector": "#tab-detections"}],
+      "assertions": ["Absent isolation verification is shown as non verified, not ready.", "Unavailable tool states are explicit and not replaced by a negative scan verdict.", "No invented process, event, screenshot, PCAP or detection appears.", "API/Nt* tracing is explicitly user-mode, not kernel syscall coverage.", "Defender remains active and a blocked run is distinguished from a completed run.", "Empty/partial evidence includes coverage caveats and never a clean verdict."]
+    },
+    {
+      "id": "authenticated-report-actions",
+      "setup": "Real local job; benign static-only test job is sufficient for PDF and sharing.",
+      "steps": [{"action": "click", "selector": "#share-job"}, {"action": "click", "selector": "#create-share"}, {"action": "click", "selector": "#copy-share"}, {"action": "click", "selector": "#revoke-share"}, {"action": "accept_confirmation"}],
+      "assertions": ["#pdf-download points to authenticated /api/jobs/{id}/report.pdf.", "Sharing sends POST with hours:24 by default and presents a redacted-only expiry notice.", "Share URL is read-only text; no external origin is automatically opened.", "Clipboard rejection selects text for manual copy.", "Revocation sends DELETE /api/jobs/{id}/share and clears the displayed link.", "#cancel-job is present only for active jobs, requires deliberate confirmation and POSTs /cancel."]
+    },
+    {
+      "id": "public-redacted-share",
+      "setup": "New unauthenticated browser context with a valid share token; also test revoked/expired token.",
+      "steps": [{"action": "goto", "path": "/s/{token}"}],
+      "assertions": ["Only GET /api/shared/{token} is needed; no session request, login demand or authenticated jobs requests.", "#shared-notice is visible and the page is labelled read-only.", "#report-actions, #private-nav, #scope-control and #back-to-jobs are hidden.", "Only summary, static and detections tabs are visible; no timeline, raw commands, private paths, sample, PCAP or artifact download access.", "Revoked/expired token produces a clear unavailable/revoked message in #error-view, not a login form.", "Navigating to a share view from a private view cannot flash previously loaded private evidence while the shared request is pending."]
+    },
+    {
+      "id": "bounded-detail-and-complete-counts",
+      "setup": "Job whose dynamic.display_limits marks 300 of more than 300 records; use real collected data or explicitly isolated test-only response.",
+      "steps": [{"action": "goto", "path": "/#job/{id}"}, {"action": "visit_each_visible_tab"}, {"action": "click", "selector": ".section-limit button"}],
+      "assertions": ["Summary metrics use full counts, related_events/related_processes or by_category, never the capped array length when full counts exist.", "Each bounded section visibly states received shown/total before correlation filtering.", "Limit notice opens paginated timeline; JSON link is shown only for a real registered report.json artifact.", "Driver hash correlation is displayed with real status and matches, never as proof of exploitation."]
+    },
+    {
+      "id": "navigation-races-and-skip-link",
+      "setup": "Isolated delayed API responses; authenticated private context followed by #share/{token}.",
+      "steps": [{"action": "start_delayed_upload_or_jobs_refresh"}, {"action": "goto", "path": "/#share/{token}"}, {"action": "release_delayed_private_response"}, {"action": "activate", "selector": ".skip-link"}, {"action": "timeline_query_A_then_B_then_A"}],
+      "assertions": ["Late upload, refresh, error or authentication responses never overwrite a public read-only view or demand login there.", "Skip link focuses and scrolls main without changing #job/{id} or #share/{token}.", "Returning to a previous timeline filter before the intervening response completes restores records and pagination, not a stuck loading message.", "Focused timeline summary/pre and expanded detail remain keyboard usable when polling changes the response."]
+    },
+    {
+      "id": "responsive-and-motion",
+      "setup": "Open dashboard, dense evidence report and shared report at all three declared viewports.",
+      "steps": [{"action": "capture_screenshot", "viewport": "each"}, {"action": "tab_through_controls"}, {"action": "emulate_reduced_motion", "value": "reduce"}],
+      "assertions": ["The 375px layout has a single column, readable text, native upload control and no viewport overflow.", "768px navigation and evidence tabs remain reachable without overlapping content.", "1440px has a sidebar, bounded content width and a compact report navigation rail.", "Long hashes, file paths and sample names wrap within cards.", "Loading, errors, empty reports and revoked links have intentional visible states.", "Reduced-motion preference removes transitions; no flashing or decorative autoplay exists."]
+    }
+  ],
+  "primary_selectors": {
+    "login": "#login-form",
+    "upload": "#analysis-form",
+    "drop": "#drop-zone",
+    "file": "#sample-file",
+    "duration": "#analysis-duration",
+    "profiles": "input[name=profile]",
+    "static_only": "#static-only",
+    "jobs": "#jobs-body",
+    "capabilities": "#capabilities-content",
+    "report": "#report-view",
+    "tabs": "#report-tabs [role=tab]",
+    "run": "#run-select",
+    "noise": "#include-noise",
+    "timeline": "#events-content",
+    "pdf": "#pdf-download",
+    "cancel": "#cancel-job",
+    "share": "#share-controls",
+    "shared_notice": "#shared-notice",
+    "errors": "#global-message, #upload-error, #login-error, #events-error, #share-error, #error-view"
+  }
+}

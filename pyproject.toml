@@ -1,0 +1,24 @@
+[project]
+name = "blacksite"
+version = "0.1.0"
+description = "BLACKSITE: local static analysis and isolated Windows malware observation"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "python-multipart>=0.0.20",
+  "httpx>=0.28,<1",
+  "reportlab>=4.3,<5",
+  "vncdotool>=1.2,<2",
+  "pillow>=11,<13",
+  "pefile>=2024.8.26",
+  "yara-python>=4.5.1",
+]
+
+[dependency-groups]
+dev = ["pytest>=8.3", "pytest-asyncio>=0.25"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

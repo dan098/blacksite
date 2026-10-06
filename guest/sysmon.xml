@@ -1,0 +1,35 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>SHA256,IMPHASH</HashAlgorithms>
+  <CheckRevocation/>
+  <EventFiltering>
+    <RuleGroup name="processi" groupRelation="or">
+      <ProcessCreate onmatch="exclude"/>
+      <ProcessTerminate onmatch="exclude"/>
+      <CreateRemoteThread onmatch="exclude"/>
+      <ProcessAccess onmatch="exclude"/>
+      <ProcessTampering onmatch="exclude"/>
+    </RuleGroup>
+    <RuleGroup name="driver-e-immagini" groupRelation="or">
+      <DriverLoad onmatch="exclude"/>
+      <ImageLoad onmatch="exclude"/>
+    </RuleGroup>
+    <RuleGroup name="file" groupRelation="or">
+      <FileCreateTime onmatch="exclude"/>
+      <FileCreate onmatch="exclude"/>
+      <RawAccessRead onmatch="exclude"/>
+      <FileCreateStreamHash onmatch="exclude"/>
+      <FileDeleteDetected onmatch="exclude"/>
+    </RuleGroup>
+    <RuleGroup name="registro" groupRelation="or">
+      <RegistryEvent onmatch="exclude"/>
+    </RuleGroup>
+    <RuleGroup name="rete" groupRelation="or">
+      <NetworkConnect onmatch="exclude"/>
+      <DnsQuery onmatch="exclude"/>
+    </RuleGroup>
+    <RuleGroup name="persistenza-e-ipc" groupRelation="or">
+      <PipeEvent onmatch="exclude"/>
+      <WmiEvent onmatch="exclude"/>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>

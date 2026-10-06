@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Sandbox Lab">
+  <Profiles>
+    <SystemCollector Id="SandboxKernelCollector" Name="Sandbox kernel ETW">
+      <BufferSize Value="1024" />
+      <Buffers Value="128" />
+    </SystemCollector>
+    <SystemProvider Id="SandboxKernelProvider">
+      <Keywords>
+        <Keyword Value="SystemCall" Strict="true" />
+        <Keyword Value="ProcessThread" Strict="true" />
+        <Keyword Value="Loader" Strict="true" />
+        <Keyword Value="FileIO" Strict="true" />
+        <Keyword Value="FileIOInit" Strict="true" />
+        <Keyword Value="Filename" Strict="true" />
+        <Keyword Value="Registry" Strict="true" />
+        <Keyword Value="Drivers" Strict="true" />
+      </Keywords>
+      <Stacks>
+        <Stack Value="SystemCallEnter" />
+        <Stack Value="SystemCallExit" />
+        <Stack Value="ProcessCreate" />
+        <Stack Value="ProcessDelete" />
+        <Stack Value="ThreadCreate" />
+        <Stack Value="ThreadDelete" />
+        <Stack Value="ImageLoad" />
+        <Stack Value="FileCreate" />
+        <Stack Value="FileRead" />
+        <Stack Value="FileWrite" />
+        <Stack Value="FileDelete" />
+        <Stack Value="RegistryCreateKey" />
+        <Stack Value="RegistryOpenKey" />
+        <Stack Value="RegistrySetValue" />
+        <Stack Value="RegistryDeleteValue" />
+        <Stack Value="RegistryDeleteKey" />
+      </Stacks>
+    </SystemProvider>
+    <Profile Id="SandboxKernel.Verbose.Memory" Name="SandboxKernel" Description="System-wide Microsoft kernel ETW; bounded in-memory ring, no user-mode hooks" LoggingMode="Memory" DetailLevel="Verbose">
+      <Collectors>
+        <SystemCollectorId Value="SandboxKernelCollector">
+          <SystemProviderId Value="SandboxKernelProvider" />
+        </SystemCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>

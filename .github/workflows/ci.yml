@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.22"
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Python dependencies
+        run: uv sync --locked --python 3.13
+      - name: Unit tests (no live VM or tool downloads)
+        run: uv run --no-sync pytest
+      - name: JavaScript syntax
+        run: |
+          node --check static/app.js
+          node --check guest/hooks.js

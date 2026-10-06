@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <title>BLACKSITE · Detonate. Trace. Contain.</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/webp" href="/static/logo.webp">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Vai al contenuto</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navigazione del laboratorio">
+      <a class="brand" href="#" aria-label="BLACKSITE, pagina iniziale"><img class="brand-symbol" src="/static/logo.webp" width="44" height="44" alt="BLACKSITE malware analysis laboratory logo"><span>BLACKSITE<small lang="en">Detonate. Trace. Contain.</small></span></a>
+      <div class="local-tag"><span class="status-dot" aria-hidden="true"></span> Locale · API privata</div>
+      <nav id="private-nav" aria-label="Sezioni" hidden>
+        <a class="nav-link" href="#new" id="nav-new"><span aria-hidden="true">+</span> Nuova analisi</a>
+        <a class="nav-link" href="#jobs" id="nav-jobs"><span aria-hidden="true">≡</span> Analisi recenti <span id="jobs-count" class="nav-count">0</span></a>
+        <a class="nav-link" href="#capabilities" id="nav-capabilities"><span aria-hidden="true">◈</span> Capacità e isolamento</a>
+      </nav>
+      <div class="sidebar-note"><strong>Osservazioni, non verdetti.</strong><p>Nessuna evidenza non significa che un campione sia sicuro. Sensori mancanti e analisi parziali restano visibili.</p></div>
+      <footer class="sidebar-footer">Windows · 4 profili dello stesso OS<br>Cloni di analisi puliti e usa-e-getta</footer>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><div><span class="eyebrow">SPAZIO DI ANALISI</span><span id="workspace-label">Analisi locale</span></div><div class="topbar-meta"><span id="connection-status" class="chip neutral">Connessione…</span><span class="small muted" id="refresh-status" aria-live="off"></span></div></header>
+      <main id="main" tabindex="-1">
+        <div id="global-message" class="notice" role="status" aria-live="polite" hidden></div>
+        <section id="login-view" class="view login-view" hidden aria-labelledby="login-title">
+          <div class="card login-card"><span class="eyebrow">ACCESSO LOCALE</span><h1 id="login-title">Il tuo laboratorio, privato.</h1><p class="muted">Usa il token locale del laboratorio. Viene inviato nel corpo della richiesta e sostituito da una sessione protetta; l'interfaccia non lo conserva né lo inserisce negli URL.</p>
+            <form id="login-form"><label for="login-token">Token di accesso</label><input id="login-token" name="token" type="password" autocomplete="off" spellcheck="false" required aria-describedby="login-help login-error"><p id="login-help" class="field-help">Il token è disponibile nella configurazione privata di BLACKSITE.</p><p id="login-error" class="form-error" role="alert" hidden></p><button class="button primary" id="login-submit" type="submit">Accedi al laboratorio</button></form>
+          </div><p class="login-footnote">Solo connessioni locali. Nessuna esposizione pubblica automatica.</p>
+        </section>
+        <section id="dashboard-view" class="view" hidden aria-labelledby="dashboard-title">
+          <div class="page-heading"><div><span class="eyebrow">LABORATORIO WINDOWS</span><h1 id="dashboard-title">Dall'oggetto alle evidenze.</h1><p>Analisi statica e osservazione in cloni isolati, con limiti espliciti.</p></div><span id="privacy-policy-status" class="chip warning">Privacy: prova non caricata</span></div>
+          <div class="isolation-banner"><span class="banner-mark" aria-hidden="true">!</span><div><strong>Tratta ogni campione come potenzialmente ostile.</strong><p>Non eseguirlo sull'host. La rete dei cloni è offline per impostazione predefinita; Internet IPv4 pubblico richiede un opt-in e un gateway confinato. Il runtime deve verificare il blocco di host, LAN, reti private, IPv6, cartelle condivise e dispositivi prima del campione. Nessuna configurazione garantisce contenimento assoluto. I file .sys non vengono installati automaticamente.</p></div></div>
+          <section id="runtime-status-section" class="card" aria-labelledby="runtime-status-title" lang="en">
+            <div class="section-heading"><div><span class="eyebrow">PRIVATE STATUS / READ ONLY</span><h2 id="runtime-status-title">Analysis privacy &amp; isolation</h2></div><button id="refresh-runtime-status" class="button secondary" type="button">Refresh status</button></div>
+            <p class="muted">Base-image evidence does not replace checks on each disposable clone. This panel reads analysis privacy evidence only; it does not start, stop or reset a VM.</p>
+            <div id="runtime-status-content" class="capability-grid"><p class="muted">Analysis privacy has not been verified yet…</p></div>
+            <p id="runtime-status-updated" class="field-help">Waiting for local evidence.</p>
+            <p class="notice warning"><strong>Opt-in Internet access remains a sample risk.</strong> Disabling cloud submissions and automatic laboratory uploads does not prevent a sample from transmitting data to public Internet services when networking is enabled. No local policy guarantees the absence of exfiltration.</p>
+          </section>
+          <section id="new-analysis" class="card" aria-labelledby="new-title">
+            <div class="section-heading"><div><span class="eyebrow">01 / CAMPIONE E PROFILI</span><h2 id="new-title">Nuova analisi</h2></div><span class="small muted">Massimo <span id="upload-limit">100 MiB</span></span></div>
+            <form id="analysis-form">
+              <div class="upload-zone" id="drop-zone"><div class="upload-symbol" aria-hidden="true">↑</div><div><label class="upload-label" for="sample-file">Scegli un campione o trascinalo qui</label><p class="field-help" id="sample-help">Un file alla volta. Archivi e formati non eseguibili vengono analizzati senza avvio.</p><input id="sample-file" name="file" type="file" required aria-describedby="sample-help file-selection upload-error"><p id="file-selection" class="file-selection" aria-live="polite">Nessun file selezionato</p></div></div>
+              <div class="form-options"><div><label for="analysis-duration">Durata per profilo (secondi)</label><input id="analysis-duration" name="duration" type="number" min="15" max="600" value="60" required aria-describedby="duration-help"><p class="field-help" id="duration-help">Da 15 a 600 secondi; avvio e raccolta richiedono tempo aggiuntivo.</p></div><label class="switch-card" for="static-only"><input id="static-only" name="static_only" type="checkbox"><span><strong>Solo analisi statica</strong><small>Nessuna esecuzione nella VM. I profili non vengono avviati.</small></span></label></div>
+              <fieldset id="profiles-fieldset"><legend>Profili Windows <span class="muted small">· cloni puliti dello stesso sistema operativo</span></legend><div class="profile-grid">
+                <label class="profile-card"><input type="checkbox" name="profile" value="standard" checked><span><strong>Standard</strong><small>Defender, Sysmon, Procmon e kernel ETW; rete offline predefinita, Internet pubblico solo opt-in con host/LAN bloccati.</small><span class="profile-note">Copertura misurata per esecuzione</span></span></label>
+                <label class="profile-card"><input type="checkbox" name="profile" value="interactive"><span><strong>Interattiva</strong><small>Attesa reale, movimenti e click innocui con gli stessi sensori.</small><span class="profile-note">Interazione controllata</span></span></label>
+                <label class="profile-card"><input type="checkbox" name="profile" value="trace"><span><strong>API e kernel</strong><small>Syscall/stack kernel Microsoft ETW più hook API/Nt* user-mode Frida.</small><span class="profile-note">Eventi reali e lacune esplicite</span></span></label>
+                <label class="profile-card"><input type="checkbox" name="profile" value="driver"><span><strong>Driver / BYOVD</strong><small>Caricamenti driver, servizi e indicatori; nessuna installazione automatica di .sys.</small><span class="profile-note">Evidenze, non sfruttamento</span></span></label>
+              </div><p class="field-help">Seleziona uno o più profili. Ogni esecuzione usa un clone distinto e pulito.</p></fieldset>
+              <p id="upload-error" class="form-error" role="alert" hidden></p><div class="form-footer"><span class="small muted">Caricamento locale; nessun invio automatico a sandbox esterne.</span><button id="analysis-submit" class="button primary" type="submit">Avvia analisi</button></div>
+            </form>
+          </section>
+          <section id="jobs-section" class="card" aria-labelledby="jobs-title"><div class="section-heading"><div><span class="eyebrow">02 / ATTIVITÀ</span><h2 id="jobs-title">Analisi recenti</h2></div><button id="refresh-jobs" class="button secondary" type="button">Aggiorna</button></div><div id="jobs-empty" class="empty-state"><strong>Nessuna analisi ancora.</strong><p>Seleziona un campione per iniziare. Qui appariranno solo attività reali.</p></div><div id="jobs-table-wrap" class="table-scroll" hidden><table class="jobs-table"><caption class="sr-only">Analisi recenti e stato di esecuzione</caption><thead><tr><th scope="col">Campione</th><th scope="col">Stato</th><th scope="col">Profili</th><th scope="col">Creato</th><th scope="col">Report</th></tr></thead><tbody id="jobs-body"></tbody></table></div></section>
+          <section id="capabilities-section" class="card" aria-labelledby="capabilities-title"><div class="section-heading"><div><span class="eyebrow">03 / TRASPARENZA</span><h2 id="capabilities-title">Capacità e isolamento</h2></div><span class="chip neutral">Dati dal backend</span></div><p class="muted">Lo stato dei sensori è distinto dall'esito del campione. Strumenti mancanti, credenziali assenti o isolamento non verificato non vengono presentati come funzionalità attive.</p><div id="capabilities-content" class="capability-grid"><p class="muted">Caricamento dello stato reale…</p></div><details><summary>Confini del laboratorio</summary><ul class="boundary-list"><li>Quattro profili, un solo sistema Windows; non sono quattro sistemi operativi diversi.</li><li>Nessuna disattivazione di Defender; cloni puliti e usa-e-getta per ogni analisi.</li><li>VirusTotal e Hybrid Analysis: lookup SHA-256 opt-in; hash sconosciuto non provoca upload.</li><li>API e chiamate Nt* osservate in user-mode non equivalgono a telemetria completa dei syscall kernel.</li><li>Rete offline per impostazione predefinita. Con Internet opt-in il campione può contattare servizi pubblici esterni; PCAP e report descrivono solo quanto raccolto.</li></ul></details></section>
+        </section>
+        <section id="report-view" class="view" hidden aria-labelledby="report-title">
+          <div id="shared-notice" class="notice info" hidden><strong>Report condiviso · sola lettura</strong><p>Vista redatta, con scadenza e revoca. Campione, comandi, percorsi privati, PCAP e artefatti grezzi non sono accessibili.</p></div>
+          <div class="report-heading"><div class="report-name"><a id="back-to-jobs" class="text-link" href="#jobs">← Tutte le analisi</a><span class="eyebrow">REPORT DI ANALISI</span><h1 id="report-title">Caricamento del report…</h1><div class="report-meta"><span id="report-status" class="chip neutral">In attesa</span><span id="report-date" class="small muted"></span><span id="report-id" class="mono small muted"></span></div></div><div id="report-actions" class="action-group"><button id="cancel-job" class="button danger" type="button" hidden>Annulla analisi</button><a id="pdf-download" class="button secondary" download>Scarica PDF</a><button id="share-job" class="button secondary" type="button">Condividi report</button></div></div>
+          <div id="share-controls" class="card share-card" hidden><div class="section-heading"><div><h2>Condivisione redatta</h2><p class="field-help">Chi possiede il link può leggere il report fino alla scadenza o alla revoca. Non apre un tunnel né rende pubblico il laboratorio.</p></div><button id="close-share" class="button quiet" type="button">Chiudi</button></div><div class="share-options"><label for="share-hours">Scadenza (ore)<input id="share-hours" type="number" min="1" max="168" value="24"></label><button id="create-share" class="button primary" type="button">Genera link</button><button id="revoke-share" class="button danger" type="button">Revoca tutti i link</button></div><div id="share-result" hidden><label for="share-url">Link di sola lettura</label><div class="copy-row"><input id="share-url" type="text" readonly spellcheck="false"><button id="copy-share" class="button secondary" type="button">Copia</button></div><p id="share-expiry" class="field-help"></p></div><p id="share-error" class="form-error" role="alert" hidden></p><p id="share-status" class="field-help" role="status"></p></div>
+          <p id="report-loading" class="notice info" role="status" hidden>Caricamento delle evidenze dal laboratorio…</p>
+          <div id="report-warnings" class="warning-list"></div>
+          <div id="report-toolbar" class="report-toolbar"><div><label for="run-select">Profilo osservato</label><select id="run-select"><option value="">Nessuna esecuzione dinamica</option></select></div><div id="scope-control"><label class="checkbox-label" for="include-noise"><input id="include-noise" type="checkbox"><span>Includi attività di sistema e rumore</span></label><p class="field-help">Predefinito: attività correlate al campione. Driver e avvisi di sicurezza restano visibili.</p></div><span id="run-status" class="chip neutral">Non disponibile</span></div>
+          <div id="report-layout" class="report-layout"><div id="report-tabs" class="report-tabs" role="tablist" aria-label="Evidenze del report" aria-orientation="vertical">
+            <button id="tab-summary" class="report-tab" role="tab" aria-selected="true" aria-controls="panel-summary" tabindex="0" data-tab="summary">Riepilogo</button>
+            <button id="tab-timeline" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-timeline" tabindex="-1" data-tab="timeline">Timeline</button>
+            <button id="tab-processes" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-processes" tabindex="-1" data-tab="processes">Albero processi</button>
+            <button id="tab-changes" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-changes" tabindex="-1" data-tab="changes">Registro e file</button>
+            <button id="tab-network" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-network" tabindex="-1" data-tab="network">Rete e PCAP</button>
+            <button id="tab-static" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-static" tabindex="-1" data-tab="static">Analisi statica</button>
+            <button id="tab-api" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-api" tabindex="-1" data-tab="api">Kernel, API e call chain</button>
+            <button id="tab-drivers" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-drivers" tabindex="-1" data-tab="drivers">Driver / BYOVD</button>
+            <button id="tab-detections" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-detections" tabindex="-1" data-tab="detections">Rilevamenti</button>
+            <button id="tab-artifacts" class="report-tab" role="tab" aria-selected="false" aria-controls="panel-artifacts" tabindex="-1" data-tab="artifacts">Artefatti</button>
+          </div><div class="evidence-panels">
+            <section id="panel-summary" class="evidence-panel" role="tabpanel" aria-labelledby="tab-summary" tabindex="0"><div id="summary-content"></div></section>
+            <section id="panel-timeline" class="evidence-panel" role="tabpanel" aria-labelledby="tab-timeline" tabindex="0" hidden><div class="card"><div class="section-heading"><div><span class="eyebrow">SEQUENZA TEMPORALE</span><h2>Timeline degli eventi</h2></div><span id="events-count" class="chip neutral">0 eventi</span></div><form id="event-filter-form" class="event-filters"><div><label for="event-search">Cerca nelle evidenze</label><input id="event-search" type="search" placeholder="Processo, destinazione, azione…" maxlength="250"></div><div><label for="event-category">Categoria</label><select id="event-category"><option value="">Tutte le categorie</option><option value="process">Processi</option><option value="registry">Registro</option><option value="file">File</option><option value="network">Rete</option><option value="api">API</option><option value="syscall">Syscall kernel</option><option value="kernel">Kernel ETW</option><option value="driver">Driver</option><option value="security">Sicurezza</option></select></div><button class="button secondary" type="submit">Filtra</button></form><p id="event-scope-note" class="field-help"></p><p id="events-error" class="form-error" role="alert" hidden></p><div id="events-content"></div><div class="pagination"><button id="events-prev" class="button secondary" type="button" disabled>Precedenti</button><span id="events-page" class="small muted" role="status">Nessun evento</span><button id="events-next" class="button secondary" type="button" disabled>Successivi</button></div></div></section>
+            <section id="panel-processes" class="evidence-panel" role="tabpanel" aria-labelledby="tab-processes" tabindex="0" hidden><div id="processes-content"></div></section>
+            <section id="panel-changes" class="evidence-panel" role="tabpanel" aria-labelledby="tab-changes" tabindex="0" hidden><div id="changes-content"></div></section>
+            <section id="panel-network" class="evidence-panel" role="tabpanel" aria-labelledby="tab-network" tabindex="0" hidden><div id="network-content"></div></section>
+            <section id="panel-static" class="evidence-panel" role="tabpanel" aria-labelledby="tab-static" tabindex="0" hidden><div id="static-content"></div></section>
+            <section id="panel-api" class="evidence-panel" role="tabpanel" aria-labelledby="tab-api" tabindex="0" hidden><div id="api-content"></div></section>
+            <section id="panel-drivers" class="evidence-panel" role="tabpanel" aria-labelledby="tab-drivers" tabindex="0" hidden><div id="drivers-content"></div></section>
+            <section id="panel-detections" class="evidence-panel" role="tabpanel" aria-labelledby="tab-detections" tabindex="0" hidden><div id="detections-content"></div></section>
+            <section id="panel-artifacts" class="evidence-panel" role="tabpanel" aria-labelledby="tab-artifacts" tabindex="0" hidden><div id="artifacts-content"></div></section>
+          </div></div>
+          <p class="report-footer">Questo report descrive evidenze e copertura dei sensori. Non certifica la sicurezza del campione.</p>
+        </section>
+        <section id="error-view" class="view" hidden><div class="card empty-state"><span class="eyebrow">REPORT NON DISPONIBILE</span><h1 id="error-title">Impossibile aprire il report</h1><p id="error-description"></p><a id="error-home" class="button secondary" href="#jobs">Torna alle analisi</a><button id="retry-page" class="button secondary" type="button">Riprova</button></div></section>
+        <noscript><div class="notice warning">JavaScript è necessario per autenticazione e visualizzazione delle evidenze. Nessun campione viene eseguito da questa pagina.</div></noscript>
+      </main>
+      <footer class="workspace-footer"><span>BLACKSITE · evidenze locali</span><span>Nessuna evidenza ≠ campione sicuro</span></footer>
+    </div>
+  </div>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
